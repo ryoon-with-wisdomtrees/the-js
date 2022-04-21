@@ -1,143 +1,138 @@
 'use strict';
 
-const btnNewGame = document.querySelector('.btn--new');
+/**🧨💥
+
+1. 4->7 => 괜찮으니 일단 하드코딩. 100%를 지양하라.
+    1-1. 필요한 변수 다 적재.
+    1-2. 필요한 함수 껍데기 적재.
+    1-3. 필요한 함수 껍데기 위에 필수 기능 적기
+    1-4. 기능만 돌아가게 구현.
+2. validate -> WIP(계속적으로...)
+3. refactoring => 직관적인 네이밍, 구조화, 중복제거
+    3-1. 직관적이고 단순한 이름으로 변경.    
+    3-2. 중복요소 추가함수로 구현.
+
+*/
+
+/**  Main Funcs vars*/
 const btnRollScore = document.querySelector('.btn--roll');
 const btnHoldeScore = document.querySelector('.btn--hold');
+const btnNewGame = document.querySelector('.btn--new');
+
+/** Main elem vars */
 const dice = document.querySelector('.dice');
 const player1 = document.querySelector('.player--0');
 const player2 = document.querySelector('.player--1');
-const score0 = document.querySelector('#score--0');
-const score1 = document.querySelector('#score--1');
-const current0 = document.querySelector('#current--0');
-const current1 = document.querySelector('#current--1');
-let switchPlayer = true;
-let startingPlayer = '';
-let countingNum = 0;
-/**🧨💥
-4->7 => 괜찮으니 일단 하드코딩. 100%를 지양하라.
-validate -> WIP
-refactoring => 직관적인 네이밍, 구조화, 중복제거*/
+const scoreP1 = document.querySelector('#score--0');
+const scoreP2 = document.querySelector('#score--1');
+const currentP1 = document.querySelector('#current--0');
+const currentP2 = document.querySelector('#current--1');
+let bPlayer = true; // true = p1, false = p2
+let currentPlayer = '';
 
 const playerList = [
-  {
-    holdScore: 0,
-    currentScore: 0,
-  },
-  {
-    holdScore: 0,
-    currentScore: 0,
-  },
+  { holdScore: 0, currentScore: 0 },
+  { holdScore: 0, currentScore: 0 },
 ];
 
-function init() {
-  console.log('init');
-  //   console.log(player1.classList.contains('player--active'));
+/**
+ * 1. Set all Scores to 0
+ * 2. Set P1 as starting Player
+ */
+const init = () => {
   playerList.forEach((player, index) => {
     player.holdScore = 0;
     player.currentScore = 0;
   });
 
-  switchPlayer = true;
-  startingPlayer = switchPlayer ? playerList[0] : playerList[1];
-  //set player1 as startingPlayers
-  score0.innerHTML = 0;
-  score1.innerHTML = 0;
-  current0.innerHTML = 0;
-  current1.innerHTML = 0;
-}
+  bPlayer = true;
+  currentPlayer = bPlayer ? playerList[0] : playerList[1];
+  scoreP1.innerHTML = 0;
+  scoreP2.innerHTML = 0;
+  currentP1.innerHTML = 0;
+  currentP2.innerHTML = 0;
+};
 
 init();
 
-function chngBg() {
-  console.log(switchPlayer);
-  console.log(player1.classList.contains('player--active'));
-
-  if (switchPlayer) {
-    // 플레이어1일떄 p1 active 있으면 스루, 없으면 애드.
-    //              p2 에 active 있으면 리뭅, 없으면 스루.
-    if (!player1.classList.contains('player--active')) {
-      player1.classList.add('player--active');
-      if (player2.classList.contains('player--active')) {
-        player2.classList.remove('player--active');
-      }
-    }
-  } else {
-    if (player1.classList.contains('player--active')) {
-      player1.classList.remove('player--active');
-      if (!player2.classList.contains('player--active')) {
-        player2.classList.add('player--active');
-      }
-    }
+/**  Sub Funcs */
+const chngBg = () => {
+  // 배경변경의 하위 기능으로 간주, 내부함수로 변경함.
+  function checkActive(elem) {
+    return elem.classList.contains('player--active');
   }
-}
+  function rmvActive(elem) {
+    return elem.classList.remove('player--active');
+  }
+  function addActive(elem) {
+    return elem.classList.add('player--active');
+  }
 
-btnNewGame.addEventListener('click', () => {
-  console.log('new game');
-  init();
-});
+  !checkActive(bPlayer ? player1 : player2) &&
+    addActive(bPlayer ? player1 : player2);
+  checkActive(bPlayer ? player2 : player1) &&
+    rmvActive(bPlayer ? player2 : player1);
+};
 
-//startingPlayer true면 1, false면 2
+const setCurrentInnerHtml = () => {
+  bPlayer
+    ? (currentP1.innerHTML = currentPlayer.currentScore)
+    : (currentP2.innerHTML = currentPlayer.currentScore);
+};
+
+const setCurrentPlayer = () => {
+  bPlayer = !bPlayer;
+  currentPlayer = bPlayer ? playerList[0] : playerList[1];
+  chngBg();
+  console.log(`🕹  P changed. 🎮 Player is ${bPlayer ? 'P1' : 'P2'}.`);
+};
+
+/**     Main Funcs   - func Roll,  func Hold, func New   -                          */
+
+/**
+ * 1. randomNum 생성
+ * 2. dice display
+ * 3. 1체크
+ *  3-1. randomNum 적립, currentInnerHtml변경
+ *  3-2. currentScore 0 초기화, currentInnerHtml변경, currentPlayer 변경.
+ */
 btnRollScore.addEventListener('click', function () {
-  console.log('btnRoll');
-  console.log(switchPlayer ? `현플레이어: p1` : `현플레이어: p2`);
-
+  console.log(`🕹  BtnRoll. 🎮 Player is ${bPlayer ? 'P1' : 'P2'}.`);
   let randomNum = Math.ceil(Math.random() * 6);
   dice.src = `dice-${randomNum}.png`;
   dice.style.display = 'block';
 
   if (randomNum !== 1) {
-    startingPlayer.currentScore += randomNum;
-    switchPlayer
-      ? (current0.innerHTML = startingPlayer.currentScore)
-      : (current1.innerHTML = startingPlayer.currentScore);
+    currentPlayer.currentScore += randomNum;
+    setCurrentInnerHtml();
   } else {
-    console.log('It is 1');
-    startingPlayer.currentScore = 0;
-    switchPlayer
-      ? (current0.innerHTML = startingPlayer.currentScore)
-      : (current1.innerHTML = startingPlayer.currentScore);
-    switchPlayer = !switchPlayer;
-    startingPlayer = switchPlayer ? playerList[0] : playerList[1];
-    chngBg();
+    console.log(`🕹  It it One`);
+    currentPlayer.currentScore = 0;
+    setCurrentInnerHtml();
+    setCurrentPlayer();
   }
-  //다끝난후 현재플레이어 상태에 따라
 });
 
 /**
- * 1. hold 누르면 holdScore 적립하고
- * 3. scoreInnerHtml에 적립하고
- * 2. currentScore 초기화하고
- * 3. CurrentInnerHtml 초기화하고
+ * 1. hold 누르면 holdScore 적립
+ * 2. scoreInnerHtml에 적립
+ * 3. currentScore 초기화
+ * 4. CurrentInnerHtml 초기화
  *
  */
 btnHoldeScore.addEventListener('click', function () {
-  console.log('btnHolde');
-  console.log(switchPlayer ? `현플레이어: p1` : `현플레이어: p2`);
-  if (switchPlayer) {
-    playerList[0].holdScore += playerList[0].currentScore;
-    score0.innerHTML = playerList[0].holdScore;
-    playerList[0].currentScore = 0;
-    current0.innerHTML = 0;
-    if (Number(playerList[0].holdScore) >= 100) {
-      alert('you win');
-    } else {
-      switchPlayer = !switchPlayer;
-      startingPlayer = switchPlayer ? playerList[0] : playerList[1];
-      chngBg();
-    }
-  } else {
-    console.log('-------');
-    playerList[1].holdScore += playerList[1].currentScore;
-    score1.innerHTML = playerList[1].holdScore;
-    playerList[1].currentScore = 0;
-    current1.innerHTML = 0;
-    if (Number(playerList[1].holdScore) >= 100) {
-      alert('you win');
-    } else {
-      switchPlayer = !switchPlayer;
-      startingPlayer = switchPlayer ? playerList[0] : playerList[1];
-      chngBg();
-    }
-  }
-  console.log(switchPlayer ? `바뀐 현플레이어: p1` : `바뀐 현플레이어: p2`);
+  console.log(`🕹  BtnHold. 🎮 Player is ${bPlayer ? 'P1' : 'P2'}.`);
+  let tempPList = bPlayer ? playerList[0] : playerList[1];
+  let tempScore = bPlayer ? scoreP1 : scoreP2;
+  let tempCurrent = bPlayer ? currentP1 : currentP2;
+
+  tempPList.holdScore += tempPList.currentScore;
+  tempScore.innerHTML = tempPList.holdScore;
+  tempPList.currentScore = 0;
+  tempCurrent.innerHTML = 0;
+  console.log(tempPList);
+  Number(tempPList.holdScore) >= 100 ? alert('you win') : setCurrentPlayer();
 });
+
+/**  게임 초기화 */
+btnNewGame.addEventListener('click', init);
