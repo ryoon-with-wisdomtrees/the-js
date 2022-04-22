@@ -27,8 +27,7 @@ const scoreP1 = document.querySelector('#score--0');
 const scoreP2 = document.querySelector('#score--1');
 const currentP1 = document.querySelector('#current--0');
 const currentP2 = document.querySelector('#current--1');
-let bPlayer = true; // true = p1, false = p2
-let currentPlayer = '';
+let bPlayer, currentPlayer;
 
 const playerList = [
   { holdScore: 0, currentScore: 0 },
@@ -45,7 +44,7 @@ const init = () => {
     player.currentScore = 0;
   });
 
-  bPlayer = true;
+  bPlayer = true; // true = p1, false = p2
   currentPlayer = bPlayer ? playerList[0] : playerList[1];
   scoreP1.innerHTML = 0;
   scoreP2.innerHTML = 0;
@@ -117,7 +116,7 @@ btnRollScore.addEventListener('click', function () {
  * 1. hold 누르면 holdScore 적립
  * 2. scoreInnerHtml에 적립
  * 3. currentScore 초기화
- * 4. CurrentInnerHtml 초기화
+ * 4. CurrentInnerHtml 초기화__
  *
  */
 btnHoldeScore.addEventListener('click', function () {
@@ -125,13 +124,18 @@ btnHoldeScore.addEventListener('click', function () {
   let tempPList = bPlayer ? playerList[0] : playerList[1];
   let tempScore = bPlayer ? scoreP1 : scoreP2;
   let tempCurrent = bPlayer ? currentP1 : currentP2;
-
+  let tempWinner = bPlayer ? player1 : player2;
   tempPList.holdScore += tempPList.currentScore;
   tempScore.innerHTML = tempPList.holdScore;
   tempPList.currentScore = 0;
   tempCurrent.innerHTML = 0;
   console.log(tempPList);
-  Number(tempPList.holdScore) >= 100 ? alert('you win') : setCurrentPlayer();
+  if (Number(tempPList.holdScore) >= 100) {
+    alert('you win');
+    dice.style.display = 'none';
+    tempWinner.classList.add('player--winner');
+    tempWinner.classList.remove('player--active');
+  } else setCurrentPlayer();
 });
 
 /**  게임 초기화 */
